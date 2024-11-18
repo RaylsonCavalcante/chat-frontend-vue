@@ -1,4 +1,4 @@
-import './assets/main.css'
+// import './assets/main.css'
 
 import { createApp, provide, h } from 'vue'
 import { DefaultApolloClient } from '@vue/apollo-composable'
@@ -11,7 +11,7 @@ import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client/core
 // HTTP connection to the API
 const httpLink = createHttpLink({
   // You should use an absolute URL here
-  uri: 'http://localhost:81/graphql',
+  uri: 'http://dd-compras-backend.test/graphql',
 })
 
 // Cache implementation

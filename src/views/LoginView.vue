@@ -1,9 +1,56 @@
+<template>
+  <div class="login-spinner"></div>
+  <div class="bg-loading-login">
+  <section class="vh-100" style="background-color: #81C784;">
+    <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+          <!-- Login -->
+          <div class="card shadow-2-strong" id="divLogin" style="border-radius: 1rem;">
+            <div class="card-body p-5 text-center">
+
+              <h3 class="mb-5" style="color: #81C784;"><i class="far fa-comments" style="color: #81C784;"></i> Login</h3>
+
+              
+              <div class="mb-4">
+                <input type="email" v-model="userLogin.email" name="email" required class="form-control form-control-lg" placeholder="Email" />
+              </div>
+
+              <div class="mb-4">
+                <input type="password" v-model="userLogin.password" name="password" required id="password" class="form-control form-control-lg" placeholder="Senha" />
+              </div>
+
+              <!-- Checkbox -->
+              <div class="form-check d-flex justify-content-start mb-4">
+                <input class="form-check-input" type="checkbox" value="" id="viewPassLogin" @click="viewPass()"/>
+                <label class="form-check-label" for="viewPassLogin"> Mostrar senha </label>
+              </div>
+
+              <button class="btn btn-lg btn-block" style="background-color:#81C784; color:white;" type="submit" @click="login">
+                <div class="spinner-border spinner-border-sm" id="spin" style="visibility: hidden; position: absolute; margin-left: -20px; margin-top:2px;" role="status">
+                </div>
+                Login
+              </button>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  </div>
+</template>
+
 <script setup>
 
 import { useMutation } from '@vue/apollo-composable'
 import gql from 'graphql-tag';
+import { useRouter } from 'vue-router';
+import {reactive, ref} from 'vue';
 
-const { mutate: login } = useMutation(gql`
+//Login
+const { mutate: login, onDone, onError } = useMutation(gql`
 mutation Login {
   login(input: { username: "test@example.com", password: "password" }) {
     access_token
@@ -16,47 +63,49 @@ mutation Login {
       name
     }
   }
-}`)
+}`);
+
+const router = useRouter();
+const userLogin = reactive({
+  email: '',
+  password: ''
+});
+
+//Pega resposta do login
+onDone(({ data }) => {
+  if (data) {
+    sessionStorage.setItem('loginData', JSON.stringify(data.login));
+
+    router.push({ path: '/chat' });
+
+  }
+});
 
 </script>
 
-<template>
-  <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-    <div class="relative py-3 sm:max-w-xl sm:mx-auto">
-      <div
-        class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-sky-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
-      </div>
-      <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
 
-        <div class="max-w-md mx-auto">
-          <div>
-            <h1 class="text-2xl font-semibold">Login</h1>
-          </div>
-          <div class="divide-y divide-gray-200">
-            <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-              <div class="relative">
-                <input autocomplete="off" id="email" name="email" type="text"
-                  class="peer placeholder-transparent h-10 w-full border-b-2 border-gray-300 text-gray-900 focus:outline-none focus:borer-rose-600"
-                  placeholder="Email address" />
-                <label for="email"
-                  class="absolute left-0 -top-3.5 text-gray-600 text-sm peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-440 peer-placeholder-shown:top-2 transition-all peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm">Email
-                  Address</label>
-              </div>
-              <div class="relative">
-                <input autocomplete="off" id="password" name="password" type="password"
-                  class="peer placeholder-transparent h-10 w-full border-b-2 border-gray-300 text-gray-900 focus:outline-none focus:borer-rose-600"
-                  placeholder="Password" />
-                <label for="password"
-                  class="absolute left-0 -top-3.5 text-gray-600 text-sm peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-440 peer-placeholder-shown:top-2 transition-all peer-focus:-top-3.5 peer-focus:text-gray-600 peer-focus:text-sm">Password</label>
-              </div>
-              <div class="relative">
-                <button class="bg-cyan-500 text-white rounded-md px-2 py-1" @click="login">Submit</button>
-              </div>
-            </div>
-          </div>
-        </div>
 
-      </div>
-    </div>
-  </div>
-</template>
+<style scoped>
+  .profile-userpic img {
+    float: none;
+    margin: 0 auto;
+    object-fit: cover;
+    border-style: solid;
+    border-color: white;
+    -webkit-border-radius: 50% !important;
+    -moz-border-radius: 50% !important;
+    border-radius: 50% !important;
+  }
+  #labelProfile{
+    cursor: pointer;
+  }
+  #imgProfile{
+    width: 100px;
+    height: 100px;
+  }
+  #fileProfile{
+     opacity: 0;
+     position: absolute;
+     z-index: -1;
+  }
+</style>

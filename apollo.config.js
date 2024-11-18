@@ -4,7 +4,7 @@ module.exports = {
     service: {
       name: 'my-app',
       // URL to the GraphQL API
-      url: 'http://localhost:81/graphql',
+      url: 'http://dd-compras-backend.test/graphql',
     },
     // Files processed by the extension
     includes: [

@@ -15,8 +15,8 @@
 
     <!-- Campo de entrada (sem funcionalidade) -->
     <div class="input-container">
-      <input type="text" placeholder="Digite sua mensagem...">
-      <button>Enviar</button>
+      <input type="text" placeholder="Digite sua mensagem..." id="messagePublic">
+      <button @click="sendMessagePublic">Enviar</button>
     </div>
   </div>
 </div>
@@ -24,7 +24,38 @@
 </template>
 
 <script setup>
+import { useMutation } from '@vue/apollo-composable';
+import gql from 'graphql-tag';
+import {reactive, ref, onMounted} from 'vue';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
 const storedData = JSON.parse(sessionStorage.getItem('loginData'));
+
+window.Echo = new Echo({
+  broadcaster: 'reverb',
+  key: 't1ebsy2hyoupzp5mfv75',
+  wsHost: 'localhost',
+  wsPort: '8080',
+  forceTLS: false,
+  enabledTransports: ['ws']
+});
+
+onMounted(async () => {
+    
+  //Public
+  window.Echo.channel('chat-channel')
+  .listen('MessageEvent', (e) => {
+    console.log(e.message)
+  })
+
+});
+
+//Send Message Public
+const { mutate: sendMessagePublic, onDone, onError } = useMutation(gql`
+mutation SendMessage {
+  sendMessage(content: "ola") 
+}`);
 
 </script>
 

@@ -7,15 +7,12 @@
   <div class="fixed-bottom">
     <!-- Área do chat -->
     <div class="chat-container">
-      <div class="message received">Olá! Como posso ajudar você?</div>
-      <div class="message user">Oi! Quero saber mais sobre seu sistema.</div>
-      <div class="message received">Claro, me diga o que você precisa!</div>
-
+      <!-- Aqui exibe as mensagens -->
     </div>
 
-    <!-- Campo de entrada (sem funcionalidade) -->
+    <!-- Campo de entrada -->
     <div class="input-container">
-      <input type="text" placeholder="Digite sua mensagem..." id="messagePublic">
+      <input type="text" placeholder="Digite sua mensagem..." v-model="text">
       <button @click="sendMessagePublic">Enviar</button>
     </div>
   </div>
@@ -30,8 +27,13 @@ import {reactive, ref, onMounted} from 'vue';
 import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 
+//Pega dados Login User
 const storedData = JSON.parse(sessionStorage.getItem('loginData'));
 
+//Variáveis
+const text = ref('');
+
+//Config echo
 window.Echo = new Echo({
   broadcaster: 'reverb',
   key: 't1ebsy2hyoupzp5mfv75',
@@ -46,17 +48,44 @@ onMounted(async () => {
   //Public
   window.Echo.channel('chat-channel')
   .listen('MessageEvent', (e) => {
-    console.log(e.message)
+    if(e.user_id != parseInt(storedData.user.id)){
+        
+        //Mostra a mensagem do client.
+        $(".chat-container").append(
+        `<div class="text-dark float-start w-100">${e.message}</div>`
+        );
+    }
   })
 
 });
 
-//Send Message Public
+//Envia Messagem - GraphQL
 const { mutate: sendMessagePublic, onDone, onError } = useMutation(gql`
-mutation SendMessage {
-  sendMessage(content: "ola") 
-}`);
+  mutation SendMessage ($user_id: Int!, $text: String!){
+    sendMessage(user_id: $user_id, content: $text) 
+  }`, () => ({
+    variables: {
+      user_id: parseInt(storedData.user.id),
+      text: text.value,
+    },
+  })
+)
 
+//Pega resposta do sendMessage
+onDone(({ data }) => {
+  if (data) {
+    if(data.sendMessage){
+      //Mostra a mensagem do User logado.
+      $(".chat-container").append(
+        `<div class="text-success float-end w-100 text-end">${text.value}</div>`
+        );
+
+      //Limpa campo
+      text.value = "";
+    }
+
+  }
+});
 </script>
 
 <style scoped>
@@ -68,28 +97,6 @@ mutation SendMessage {
   padding: 10px;
   background-color: #f4f4f4;
   overflow-y: auto;
-}
-
-/* Estilo das mensagens */
-.message {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  max-width: 70%;
-}
-
-/* Mensagens enviadas pelo usuário */
-.message.user {
-  align-self: flex-end;
-  background-color: #d1e7dd;
-  color: #0f5132;
-}
-
-/* Mensagens recebidas */
-.message.received {
-  align-self: flex-start;
-  background-color: #e7e9eb;
-  color: #343a40;
 }
 
 /* Campo de entrada */

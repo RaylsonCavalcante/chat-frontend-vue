@@ -49,33 +49,43 @@ import gql from 'graphql-tag';
 import { useRouter } from 'vue-router';
 import {reactive, ref} from 'vue';
 
-//Login
-const { mutate: login, onDone, onError } = useMutation(gql`
-mutation Login {
-  login(input: { username: "test@example.com", password: "password" }) {
-    access_token
-    expires_in
-    refresh_token
-    token_type
-    user {
-      email
-      id
-      name
-    }
-  }
-}`);
-
+//Variáveis
 const router = useRouter();
 const userLogin = reactive({
   email: '',
   password: ''
 });
 
+//Login GraphQL
+const { mutate: login, onDone, onError } = useMutation(gql`
+  mutation Login ($email: String!, $password: String!){
+    login(input: { username: $email, password: $password }) {
+      access_token
+      expires_in
+      refresh_token
+      token_type
+      user {
+        email
+        id
+        name
+      }
+    }
+  }`, () => ({
+    variables: {
+      email: userLogin.email,
+      password: userLogin.password,
+    },
+  })
+);
+
+
 //Pega resposta do login
 onDone(({ data }) => {
   if (data) {
+    //Salva dados retornados no sessionStorage
     sessionStorage.setItem('loginData', JSON.stringify(data.login));
 
+    //Encaminha para tela de Chat
     router.push({ path: '/chat' });
 
   }

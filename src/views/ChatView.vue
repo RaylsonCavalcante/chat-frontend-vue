@@ -48,7 +48,7 @@ onMounted(async () => {
   //Public
   window.Echo.channel('chat-channel')
   .listen('MessageEvent', (e) => {
-    if(e.user_id != parseInt(storedData.user.id)){
+    if(e.user.connect != parseInt(storedData.user.id)){
         
         //Mostra a mensagem do client.
         $(".chat-container").append(
@@ -61,15 +61,37 @@ onMounted(async () => {
 
 //Envia Messagem - GraphQL
 const { mutate: sendMessagePublic, onDone, onError } = useMutation(gql`
-  mutation SendMessage ($user_id: Int!, $text: String!){
-    sendMessage(user_id: $user_id, content: $text) 
+  mutation SendMessage ($input: CreateMessageInput!){
+    sendMessage(input: $input) 
   }`, () => ({
     variables: {
-      user_id: parseInt(storedData.user.id),
-      text: text.value,
+      input: {
+        message: text.value,
+        date: '2024-12-02',
+        nickname: storedData.user.name,
+        client: { connect: 1 },  // Envolvendo o ID em 'connect'
+        user: { connect: parseInt(storedData.user.id) },  // Envolvendo o ID em 'connect'
+        public_session: { connect: 1 }  // Envolvendo o ID em 'connect'
+      }
     },
   })
 )
+
+//Envia Messagem - GraphQL
+// const { mutate: sendMessagePublic, onDone, onError } = useMutation(gql`
+//   mutation SendMessage ($message: String!, $date: Date!, $nickname: String!, $client_id: Int!, $user_id: Int!, $public_session: Int!){
+//     sendMessage(message: $message, date: $date, nickname: $nickname, client: $client_id, user: $user_id, public_session: $public_session) 
+//   }`, () => ({
+//     variables: {
+//       message: text.value,
+//       date: '2024-12-02',
+//       nickname: storedData.user.name,
+//       client_id: 1,
+//       user_id: parseInt(storedData.user.id),
+//       public_session: 1
+//     },
+//   })
+// )
 
 //Pega resposta do sendMessage
 onDone(({ data }) => {
